@@ -1,1 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Físicabot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- ===== MathJax ===== -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['\\(', '\\)']
+                ],
+                displayMath: [
+                    ['\\[', '\\]']
+                ]
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            options: {
+                skipHtmlTypes: 'script'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async>
+    </script>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h2>Físicabot</h2>
+                    <p>Asistente Inteligente de Física</p>
+                </div>
+            </div>
+
+            <button class="nuevo-chat" id="btnNuevoChat">
+                <i class="fa-solid fa-plus"></i> Nueva conversación
+            </button>
+
+            <div class="menu">
+                <div class="menu-title">MENÚ</div>
+                <a href="javascript:void(0)" class="menu-item active" data-accion="conversacion">
+                    <i class="fa-solid fa-comments"></i> Conversación
+                </a>
+                <a href="javascript:void(0)" class="menu-item" data-accion="guia">
+                    <i class="fa-solid fa-book"></i> Guía de uso
+                </a>
+                <a href="javascript:void(0)" class="menu-item" data-accion="acerca">
+                    <i class="fa-solid fa-circle-info"></i> Acerca de
+                </a>
+            </div>
+
+            <!-- ===== HISTORIAL ===== -->
+            <div class="historial-section">
+                <div class="historial-header">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial</h3>
+                    <button id="btnRefrescarHistorial" title="Refrescar"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div id="listaHistorial" class="lista-historial">
+                    <p class="sin-conversaciones">No hay conversaciones guardadas.</p>
+                </div>
+            </div>
+
+            <!-- ===== MODO OSCURO ===== -->
+            <div class="theme-toggle">
+                <button id="btnModoOscuro" class="btn-theme">
+                    <i class="fa-solid fa-moon"></i> Modo oscuro
+                </button>
+            </div>
+
+            <!-- ===== CONTROLES DE CONFIGURACIÓN ===== -->
+            <div class="config-section">
+                <h3><i class="fa-solid fa-upload"></i> Cargar PDF</h3>
+                <input type="file" id="pdfFile" accept=".pdf">
+                <button onclick="cargarPDF()">Subir</button>
+                <div id="estadoPDF" class="estado">Ningún archivo seleccionado</div>
+
+                <hr>
+
+                <h3><i class="fa-solid fa-key"></i> Gemini API Key</h3>
+                <input type="password" id="apiKeyInput" placeholder="Ingresa tu clave (opcional)">
+                <button onclick="guardarAPIKey()">Guardar</button>
+                <div id="estadoAPI" class="estado">Usando clave por defecto</div>
+            </div>
+
+            <div class="info-card">
+                <h3>Información</h3>
+                <p><strong>Libro</strong><br>Física Universitaria Vol. 1</p>
+                <p><strong>Modelo IA</strong><br>Gemini 2.5 Flash</p>
+                <p><strong>Versión</strong><br>2.0</p>
+            </div>
+        </aside>
+
+        <!-- Overlay para cerrar sidebar en móvil -->
+        <div class="overlay-sidebar" id="overlaySidebar"></div>
+
+        <!-- ================= CONTENIDO PRINCIPAL ================= -->
+        <main class="contenido">
+            <header class="cabecera">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="btnMenuHamburguesa" class="btn-hamburguesa" aria-label="Abrir menú">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Físicabot</h1>
+                        <span>Tu asistente inteligente de Física</span>
+                    </div>
+                </div>
+            </header>
+
+            <section id="chat" class="chat">
+                <div class="mensaje bienvenida">
+                    <div class="avatar">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="burbuja bot">
+                        <h3>¡Bienvenido!</h3>
+                        <p>Soy <strong>Físicabot</strong>.</p>
+                        <p>Estoy preparado para ayudarte con conceptos, ejercicios, fórmulas y problemas de Física.</p>
+                        <p>Utilizo como fuente principal el libro <strong>Física Universitaria Vol. 1</strong> y complemento mis respuestas con inteligencia artificial cuando es necesario.</p>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="entrada">
+                <div class="input-wrapper">
+                    <label for="inputImagen" class="btn-imagen" title="Adjuntar imagen">
+                        <i class="fa-regular fa-image"></i>
+                    </label>
+                    <input type="file" id="inputImagen" accept="image/*" style="display:none;">
+
+                    <input type="text" id="pregunta" placeholder="Escribe tu pregunta...">
+                    <button id="btnEnviar" onclick="enviarPregunta()">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div id="previewImagen" class="preview-imagen" style="display:none;">
+                    <img id="imgPreview" src="" alt="Imagen adjunta">
+                    <button id="btnQuitarImagen" type="button" onclick="quitarImagen()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            </footer>
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
