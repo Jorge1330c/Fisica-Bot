@@ -1,0 +1,6 @@
+flask
+google-generativeai
+pymupdf
+rank-bm25
+werkzeug
+gunicorn
